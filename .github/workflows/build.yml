@@ -8,16 +8,25 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Locate project
+        id: loc
+        run: |
+          D=$(dirname "$(find . -name project.yml | head -1)")
+          echo "Project folder: $D"
+          echo "dir=$D" >> "$GITHUB_OUTPUT"
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
+        working-directory: ${{ steps.loc.outputs.dir }}
         run: xcodegen generate
       - name: Build (unsigned)
+        working-directory: ${{ steps.loc.outputs.dir }}
         run: |
           xcodebuild -project MyTracks.xcodeproj -scheme MyTracks -configuration Release \
             -sdk iphoneos -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
       - name: Package IPA
+        working-directory: ${{ steps.loc.outputs.dir }}
         run: |
           mkdir Payload
           cp -R build/Build/Products/Release-iphoneos/MyTracks.app Payload/
@@ -25,4 +34,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: MyTracks-ipa
-          path: MyTracks.ipa
+          path: ${{ steps.loc.outputs.dir }}/MyTracks.ipa
