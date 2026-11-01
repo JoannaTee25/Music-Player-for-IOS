@@ -11,7 +11,7 @@ targets:
     info:
       path: MyTracks/Info.plist
       properties:
-        CFBundleDisplayName: My Tracks
+        CFBundleDisplayName: My Songs
         UILaunchScreen: {}
         UIBackgroundModes: [audio]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
