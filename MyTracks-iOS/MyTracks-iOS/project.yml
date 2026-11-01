@@ -1,0 +1,24 @@
+name: MyTracks
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "16.0"
+targets:
+  MyTracks:
+    type: application
+    platform: iOS
+    sources: [MyTracks]
+    info:
+      path: MyTracks/Info.plist
+      properties:
+        CFBundleDisplayName: My Tracks
+        UILaunchScreen: {}
+        UIBackgroundModes: [audio]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.mytracks
+        SWIFT_VERSION: "5.0"
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1"
