@@ -118,6 +118,46 @@ final class PlayerManager: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 
+    // MARK: - Skip & Navigation Helpers
+
+    /// Skip to the next song in the queue
+    func skipToNext() {
+        advance(auto: false)
+    }
+
+    /// Return to the start of the current song or skip to the previous song
+    func skipToPrevious() {
+        previous()
+    }
+
+    /// Jump forward by a set duration (default: 15s)
+    func skipForward(by seconds: Double = 15) {
+        let target = min(time + seconds, duration)
+        seek(target)
+    }
+
+    /// Jump backward by a set duration (default: 15s)
+    func skipBackward(by seconds: Double = 15) {
+        let target = max(time - seconds, 0)
+        seek(target)
+    }
+
+    /// The upcoming song in the queue, if any
+    var upNext: Song? {
+        guard !order.isEmpty else { return nil }
+        if index + 1 < order.count {
+            return order[index + 1]
+        } else if loop == .all || order.count > 1 {
+            return order.first
+        }
+        return nil
+    }
+
+    /// Whether a next track can be skipped to
+    var hasNext: Bool {
+        return order.count > 1 || loop == .all
+    }
+
     func remove(_ id: UUID) {
         queue.removeAll { $0.id == id }
         guard let i = order.firstIndex(where: { $0.id == id }) else { return }
