@@ -53,10 +53,24 @@ struct SongList: View {
 
     var body: some View {
         List {
-            if songs.isEmpty { Text(emptyText).foregroundColor(.secondary) }
+            if songs.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "music.note.list")
+                        .font(.system(size: 48))
+                        .foregroundColor(.secondary.opacity(0.6))
+                    Text(emptyText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+                .listRowBackground(Color.clear)
+            }
             ForEach(songs) { song in
                 Button { player.play(songs: songs, start: song) } label: { row(song) }
-                    .swipeActions {
+                    .swipeActions(edge: .trailing) {
                         Button(role: .destructive) { remove(song) } label: { Label("Delete", systemImage: "trash") }
                     }
                     .contextMenu {
@@ -84,19 +98,42 @@ struct SongList: View {
 
     private func row(_ song: Song) -> some View {
         let isCurrent = player.currentID == song.id
-        return HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(song.name).foregroundColor(isCurrent ? .accentColor : .primary)
+        return HStack(spacing: 12) {
+            // Song artwork icon
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isCurrent ? Color.accentColor.opacity(0.18) : Color.secondary.opacity(0.1))
+                .frame(width: 42, height: 42)
+                .overlay(
+                    Image(systemName: isCurrent ? (player.isPlaying ? "waveform" : "speaker.wave.2.fill") : "music.note")
+                        .font(.system(size: 16, weight: isCurrent ? .bold : .medium))
+                        .foregroundColor(isCurrent ? .accentColor : .secondary)
+                )
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(song.name)
+                    .font(.body.weight(isCurrent ? .semibold : .regular))
+                    .foregroundColor(isCurrent ? .accentColor : .primary)
+                    .lineLimit(1)
                 if showAlbum, let a = library.albumName(song.albumID) {
-                    Text(a).font(.caption).foregroundColor(.secondary)
+                    Text(a)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
                 }
             }
+
             Spacer()
+
             if isCurrent {
-                Image(systemName: player.isPlaying ? "speaker.wave.2.fill" : "speaker.fill")
+                Image(systemName: player.isPlaying ? "waveform" : "pause.fill")
+                    .font(.caption.weight(.bold))
                     .foregroundColor(.accentColor)
+                    .padding(6)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(Circle())
             }
         }
+        .padding(.vertical, 2)
     }
 }
 
@@ -211,15 +248,52 @@ struct AlbumsView: View {
         NavigationStack {
             List {
                 if library.albums.isEmpty {
-                    Text("No albums yet. Tap + to create one.").foregroundColor(.secondary)
+                    VStack(spacing: 12) {
+                        Image(systemName: "square.stack")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary.opacity(0.6))
+                        Text("No albums yet")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        Text("Tap + above to create your first album and organize your songs.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 40)
+                    .listRowBackground(Color.clear)
                 }
                 ForEach(library.albums.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }) { a in
                     NavigationLink(value: a) {
-                        VStack(alignment: .leading) {
-                            Text(a.name)
-                            let n = library.songs.filter { $0.albumID == a.id }.count
-                            Text("\(n) \(n == 1 ? "song" : "songs")").font(.caption).foregroundColor(.secondary)
+                        HStack(spacing: 14) {
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.8)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 48, height: 48)
+                                .overlay(
+                                    Image(systemName: "square.stack.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(.white)
+                                )
+
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(a.name)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                let n = library.songs.filter { $0.albumID == a.id }.count
+                                Text("\(n) \(n == 1 ? "song" : "songs")")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                        .padding(.vertical, 2)
                     }
                 }
                 .onDelete { idx in
@@ -266,6 +340,38 @@ struct AlbumDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Album Header
+            HStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 70, height: 70)
+                    .overlay(
+                        Image(systemName: "square.stack.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.white)
+                    )
+                    .shadow(color: Color.purple.opacity(0.25), radius: 8, x: 0, y: 4)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(album?.name ?? "Album")
+                        .font(.title3.weight(.bold))
+                        .lineLimit(2)
+                    Text("\(songs.count) \(songs.count == 1 ? "song" : "songs")")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+            }
+            .padding(.horizontal)
+            .padding(.top, 8)
+
             if !songs.isEmpty {
                 HStack(spacing: 12) {
                     Button { player.play(songs: songs, shuffle: false) } label: {
@@ -275,7 +381,8 @@ struct AlbumDetailView: View {
                         Label("Shuffle", systemImage: "shuffle").frame(maxWidth: .infinity)
                     }.buttonStyle(.bordered)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 12)
             }
             SongList(songs: songs, showAlbum: false,
                      emptyText: "This album is empty. Use the menu at the top to add songs.")
@@ -302,7 +409,7 @@ struct AlbumDetailView: View {
             Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog("Delete this album? Its songs stay in your library.", isPresented: $showDelete,
-                            titleVisibility: .visible) {
+                             titleVisibility: .visible) {
             Button("Delete album", role: .destructive) {
                 library.deleteAlbum(albumID)
                 dismiss()
