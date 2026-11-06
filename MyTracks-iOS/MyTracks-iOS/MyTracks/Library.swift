@@ -31,6 +31,7 @@ final class Library: ObservableObject {
             songs = store.songs
             albums = store.albums
         }
+        _ = scanDocumentsDirectory()
     }
 
     private func save() {
@@ -48,6 +49,35 @@ final class Library: ObservableObject {
     }
 
     // Songs
+    func addSong(name: String, fileName: String, albumID: UUID? = nil) {
+        if !songs.contains(where: { $0.fileName == fileName }) {
+            songs.append(Song(name: name, fileName: fileName, albumID: albumID))
+        }
+    }
+
+    @discardableResult
+    func scanDocumentsDirectory() -> Int {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: docs, includingPropertiesForKeys: nil) else { return 0 }
+        let existing = Set(songs.map { $0.fileName })
+        let validExts: Set<String> = ["mp3", "m4a", "wav", "aac", "flac", "aif", "aiff"]
+
+        var newSongs: [Song] = []
+        for file in files {
+            let ext = file.pathExtension.lowercased()
+            guard validExts.contains(ext) else { continue }
+            let fn = file.lastPathComponent
+            if !existing.contains(fn) {
+                let name = file.deletingPathExtension().lastPathComponent
+                newSongs.append(Song(name: name, fileName: fn))
+            }
+        }
+
+        if !newSongs.isEmpty {
+            songs.append(contentsOf: newSongs)
+        }
+        return newSongs.count
+    }
+
     func importFile(from url: URL, name: String, albumID: UUID?) throws {
         let access = url.startAccessingSecurityScopedResource()
         defer { if access { url.stopAccessingSecurityScopedResource() } }
