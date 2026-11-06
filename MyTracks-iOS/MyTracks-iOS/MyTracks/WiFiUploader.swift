@@ -10,7 +10,7 @@ private func getLocalWiFiAddress() -> String? {
     guard getifaddrs(&ifaddr) == 0, let firstAddr = ifaddr else { return nil }
     defer { freeifaddrs(ifaddr) }
 
-    for ptr in sequence(first: firstAddr, by: { $0.pointee.ifa_next }) {
+    for ptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
         let interface = ptr.pointee
         let addrFamily = interface.ifa_addr.pointee.sa_family
         if addrFamily == UInt8(AF_INET) {
