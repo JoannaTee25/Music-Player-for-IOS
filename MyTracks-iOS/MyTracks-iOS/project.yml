@@ -15,6 +15,9 @@ targets:
         UILaunchScreen: {}
         UIBackgroundModes: [audio]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSLocalNetworkUsageDescription: "MyTracks uses your local Wi-Fi to let you upload MP3 files directly from your laptop's web browser."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.example.mytracks
