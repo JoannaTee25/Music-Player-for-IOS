@@ -17,7 +17,7 @@ private func getLocalWiFiAddress() -> String? {
             let name = String(cString: interface.ifa_name)
             // en0 is primary Wi-Fi interface on iOS devices
             if name == "en0" || name == "en1" {
-                var hostname = [CChar](<repeating: 0, count: Int(NI_MAXHOST>))
+                var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                 getnameinfo(
                     interface.ifa_addr,
                     socklen_t(interface.ifa_addr.pointee.sa_len),
